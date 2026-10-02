@@ -31,14 +31,15 @@ def deploy():
         
         # Method 1: Set Environment Variables (Standard Kaggle CLI method)
         os.environ['KAGGLE_USERNAME'] = account['username']
-        os.environ['KAGGLE_KEY'] = account['token']
+        os.environ['KAGGLE_KEY'] = account['token'].replace("KGAT_", "")
+        os.environ['KAGGLE_API_TOKEN'] = account['token']
         
         # Method 2: Force write kaggle.json to guarantee authentication works on GitHub Actions
         kaggle_json_path = os.path.join(kaggle_dir, 'kaggle.json')
         with open(kaggle_json_path, 'w') as f:
             json.dump({
                 "username": account["username"],
-                "key": account["token"]
+                "key": account["token"].replace("KGAT_", "")
             }, f)
         # Kaggle requires the file to be readable only by the owner
         try:
@@ -57,10 +58,10 @@ def deploy():
         stdout_lower = status_result.stdout.lower()
         
         if 'running' in stdout_lower or 'queued' in stdout_lower:
-            print(f"⏭️ Notebook [{kernel_id}] is currently RUNNING/QUEUED. Skipping push.")
+            print(f" Notebook [{kernel_id}] is currently RUNNING/QUEUED. Skipping push.")
             continue
             
-        print(f"✅ Notebook [{kernel_id}] is complete/error or doesn't exist yet. Preparing to push a new version...")
+        print(f" Notebook [{kernel_id}] is complete/error or doesn't exist yet. Preparing to push a new version...")
         
         nb_dir = f"notebooks/nb_{i}"
         os.makedirs(nb_dir, exist_ok=True)
@@ -85,7 +86,7 @@ def deploy():
         with open(f"{nb_dir}/kernel-metadata.json", 'w') as f:
             json.dump(metadata, f, indent=2)
             
-        print(f"🚀 Pushing new version for notebook {i}...")
+        print(f" Pushing new version for notebook {i}...")
         try:
             push_result = subprocess.run(
                 ["kaggle", "kernels", "push", "-p", nb_dir], 
@@ -95,7 +96,7 @@ def deploy():
             if push_result.returncode == 0 and "Authentication required" not in push_result.stdout:
                 print(f"Successfully pushed and started a new session for notebook {i}!")
             else:
-                print(f"❌ Failed to push notebook {i}.")
+                print(f" Failed to push notebook {i}.")
                 print(f"Error output:\n{push_result.stdout}\n{push_result.stderr}")
                 has_errors = True
         except Exception as e:
