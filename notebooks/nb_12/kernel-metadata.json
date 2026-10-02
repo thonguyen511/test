@@ -1,0 +1,13 @@
+{
+  "id": "tqunacc/automated-task-notebook-12",
+  "title": "Automated Task Notebook 12",
+  "code_file": "main.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": []
+}

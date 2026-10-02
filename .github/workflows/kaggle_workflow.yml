@@ -1,12 +1,9 @@
 name: Kaggle Automator (5-min Test)
 
 on:
-  # To test our 5-minute sessions rapidly, we run the GitHub action every 10 minutes.
-  # This ensures that as soon as the 5-minute session finishes, the next check catches it.
-  schedule:
-    - cron: '*/10 * * * *'
-    
   workflow_dispatch:
+  repository_dispatch:
+    types: [kaggle_finish]
 
 jobs:
   deploy-to-kaggle:
@@ -25,4 +22,14 @@ jobs:
           pip install kaggle
 
       - name: Run the deployment script
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: python deploy_kaggle.py
+
+      - name: Commit updated sessions state
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add sessions.json
+          git commit -m "Update sessions.json [skip ci]" || exit 0
+          git push

@@ -1,0 +1,13 @@
+{
+  "id": "hero0511acc/automated-task-notebook-8",
+  "title": "Automated Task Notebook 8",
+  "code_file": "main.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": []
+}
