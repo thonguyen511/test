@@ -21,21 +21,22 @@ print("Notebook finished its task!")
 GH_PAT = "{{GH_PAT_TOKEN}}"  # Injected by deploy_kaggle.py
 
 if GH_PAT and GH_PAT != "None":
-    print("Sending webhook to GitHub to instantly trigger the next run...")
-    try:
-        url = "https://api.github.com/repos/thonguyen511/test/actions/workflows/kaggle_workflow.yml/dispatches"
-        headers = {
-            "Authorization": f"Bearer {GH_PAT}",
-            "Accept": "application/vnd.github.v3+json",
-            "X-GitHub-Api-Version": "2022-11-28"
-        }
-        data = {"ref": "main"}
-        
-        response = requests.post(url, headers=headers, json=data)
-        
-        if response.status_code == 204:
-            print("Successfully triggered GitHub Action!")
-        else:
-            print(f"Failed to trigger. Status: {response.status_code}, Response: {response.text}")
-    except Exception as e:
-        print(f"Error triggering webhook: {e}")
+    if "{{NOTEBOOK_INDEX}}" == "0":
+        print("Sending webhook to GitHub to instantly trigger the next run...")
+        try:
+            url = "https://api.github.com/repos/thonguyen511/test/actions/workflows/kaggle_workflow.yml/dispatches"
+            headers = {
+                "Authorization": f"Bearer {GH_PAT}",
+                "Accept": "application/vnd.github.v3+json",
+                "X-GitHub-Api-Version": "2022-11-28"
+            }
+            data = {"ref": "main"}
+            
+            response = requests.post(url, headers=headers, json=data)
+            
+            if response.status_code == 204:
+                print("Successfully triggered GitHub Action!")
+            else:
+                print(f"Failed to trigger. Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            print(f"Error triggering webhook: {e}")

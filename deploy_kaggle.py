@@ -74,9 +74,15 @@ def deploy():
         
         stdout_lower = status_result.stdout.lower()
         
-        if 'running' in stdout_lower or 'queued' in stdout_lower:
-            print(f" Notebook [{kernel_id}] is currently RUNNING/QUEUED. Skipping push.")
-            continue
+        while 'running' in stdout_lower or 'queued' in stdout_lower:
+            import time
+            print(f" Notebook [{kernel_id}] is still RUNNING/QUEUED. Waiting 30 seconds...")
+            time.sleep(30)
+            status_result = subprocess.run(
+                ["kaggle", "kernels", "status", kernel_id], 
+                capture_output=True, text=True
+            )
+            stdout_lower = status_result.stdout.lower()
             
         print(f" Notebook [{kernel_id}] is complete/error or doesn't exist yet. Preparing to push session {sessions.get(nb_key, 0) + 1}/10...")
         
