@@ -3,7 +3,7 @@ import json
 import subprocess
 import sys
 
-# The Kaggle API now uses KAGGLE_API_TOKEN
+# The actual key is the full string including KGAT_
 ACCOUNTS = [
     {"username": "thonguyen511", "token": "KGAT_9a29974782c1c24e1e9bccf69a51e21d"},
     {"username": "hero0511acc", "token": "KGAT_8aad194411dbee85815ec01a682f3047"},
@@ -18,6 +18,10 @@ def deploy():
     os.makedirs('notebooks', exist_ok=True)
     has_errors = False
 
+    # Ensure ~/.kaggle directory exists
+    kaggle_dir = os.path.expanduser('~/.kaggle')
+    os.makedirs(kaggle_dir, exist_ok=True)
+
     for i in range(20):
         acc_index = i // 5
         account = ACCOUNTS[acc_index]
@@ -25,8 +29,22 @@ def deploy():
         print(f"\n==================================================")
         print(f"Processing Notebook {i} using account {account['username']}")
         
-        # Use the correct env variable for the new Kaggle API
-        os.environ['KAGGLE_API_TOKEN'] = account['token']
+        # Method 1: Set Environment Variables (Standard Kaggle CLI method)
+        os.environ['KAGGLE_USERNAME'] = account['username']
+        os.environ['KAGGLE_KEY'] = account['token']
+        
+        # Method 2: Force write kaggle.json to guarantee authentication works on GitHub Actions
+        kaggle_json_path = os.path.join(kaggle_dir, 'kaggle.json')
+        with open(kaggle_json_path, 'w') as f:
+            json.dump({
+                "username": account["username"],
+                "key": account["token"]
+            }, f)
+        # Kaggle requires the file to be readable only by the owner
+        try:
+            os.chmod(kaggle_json_path, 0o600)
+        except Exception:
+            pass
         
         kernel_id = f"{account['username']}/automated-task-notebook-{i}"
         
@@ -74,7 +92,6 @@ def deploy():
                 capture_output=True, text=True
             )
             
-            # Check if authentication failed or command failed
             if push_result.returncode == 0 and "Authentication required" not in push_result.stdout:
                 print(f"Successfully pushed and started a new session for notebook {i}!")
             else:
@@ -85,7 +102,6 @@ def deploy():
             print(f"Exception occurred while pushing notebook {i}: {e}")
             has_errors = True
 
-    # If any notebook failed to push, exit with an error code so GitHub Action turns red!
     if has_errors:
         sys.exit(1)
 
